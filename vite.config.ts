@@ -5,6 +5,7 @@ import { jsxLocPlugin } from "@builder.io/vite-plugin-jsx-loc";
 import path from "node:path";
 
 export default defineConfig({
+  base: "/",
   plugins: [react(), tailwindcss(), jsxLocPlugin()],
   resolve: {
     alias: {

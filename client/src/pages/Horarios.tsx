@@ -38,8 +38,8 @@ export default function HorariosPage() {
   const [saving, setSaving] = useState(false);
   const [viewMode, setViewMode] = useState<'grade' | 'lista'>('grade');
 
-  // Only show Mon-Sat by default
-  const activeDays = [1, 2, 3, 4, 5, 6] as DiaSemana[];
+  // CORRIGIDO: Agora inclui DOMINGO (0)
+  const activeDays = [0, 1, 2, 3, 4, 5, 6] as DiaSemana[];
 
   // Group horarios by day
   const byDay = useMemo(() => {
@@ -121,12 +121,13 @@ export default function HorariosPage() {
           </Button>
         </div>
       ) : viewMode === 'grade' ? (
-        /* ---- GRADE VIEW ---- */
+        /* ---- GRADE VIEW CORRIGIDA COM RESPONSIVIDADE ---- */
         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Versão Desktop - Grade tradicional */}
+          <div className="hidden md:block overflow-x-auto">
             <div className="min-w-[640px]">
-              {/* Header row */}
-              <div className="grid border-b border-slate-200" style={{ gridTemplateColumns: '60px repeat(6, 1fr)' }}>
+              {/* Header row - agora com 7 dias */}
+              <div className="grid border-b border-slate-200" style={{ gridTemplateColumns: '60px repeat(7, 1fr)' }}>
                 <div className="p-3 text-xs text-slate-400 font-medium" />
                 {activeDays.map(dia => (
                   <div key={dia} className="p-3 text-center border-l border-slate-100">
@@ -141,7 +142,7 @@ export default function HorariosPage() {
                 <div
                   key={hour}
                   className="grid border-b border-slate-100 last:border-0"
-                  style={{ gridTemplateColumns: '60px repeat(6, 1fr)', minHeight: '48px' }}
+                  style={{ gridTemplateColumns: '60px repeat(7, 1fr)', minHeight: '48px' }}
                 >
                   <div className="p-2 text-xs text-slate-400 text-right pr-3 pt-3 font-mono">{hour}</div>
                   {activeDays.map(dia => {
@@ -168,14 +169,14 @@ export default function HorariosPage() {
                               className="rounded-lg p-1.5 text-xs group relative"
                               style={{ backgroundColor: cor + '20', borderLeft: `3px solid ${cor}` }}
                             >
-                              <p className="font-semibold truncate" style={{ color: cor }}>
+                              <p className="font-semibold truncate text-[11px] md:text-xs" style={{ color: cor }}>
                                 {aula.disciplina?.nome || 'Disciplina'}
                               </p>
-                              <p className="text-slate-500 text-[10px]">
+                              <p className="text-slate-500 text-[9px] md:text-[10px]">
                                 {aula.hora_inicio}–{aula.hora_fim}
                               </p>
                               {(aula.local || aula.disciplina?.local) && (
-                                <p className="text-slate-400 text-[10px] truncate">
+                                <p className="text-slate-400 text-[9px] md:text-[10px] truncate">
                                   {aula.local || aula.disciplina?.local}
                                 </p>
                               )}
@@ -195,9 +196,59 @@ export default function HorariosPage() {
               ))}
             </div>
           </div>
+
+          {/* Versão Mobile - Cards por dia */}
+          <div className="md:hidden space-y-4 p-4">
+            {activeDays.map(dia => {
+              const aulas = byDay[dia] || [];
+              if (aulas.length === 0) return null;
+              return (
+                <div key={dia} className="bg-slate-50 rounded-xl overflow-hidden border border-slate-200">
+                  <div className="bg-slate-100 px-4 py-3 border-b border-slate-200">
+                    <h3 className="font-semibold text-slate-700 text-sm">{DIAS_FULL[dia]}</h3>
+                  </div>
+                  <div className="divide-y divide-slate-200">
+                    {aulas.map(aula => {
+                      const cor = aula.disciplina?.cor || '#6366F1';
+                      return (
+                        <div key={aula.id} className="px-4 py-3 bg-white">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3 flex-1">
+                              <div className="w-1 h-10 rounded-full flex-shrink-0" style={{ backgroundColor: cor }} />
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-slate-800 text-sm truncate">
+                                  {aula.disciplina?.nome || 'Disciplina'}
+                                </p>
+                                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
+                                  <span className="text-xs text-slate-500 flex items-center gap-1">
+                                    <Clock size={11} /> {aula.hora_inicio}–{aula.hora_fim}
+                                  </span>
+                                  {(aula.local || aula.disciplina?.local) && (
+                                    <span className="text-xs text-slate-400 flex items-center gap-1">
+                                      <MapPin size={11} /> {aula.local || aula.disciplina?.local}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            <button
+                              className="text-slate-400 hover:text-red-500 transition-colors p-1 flex-shrink-0"
+                              onClick={() => handleDelete(aula.id)}
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       ) : (
-        /* ---- LISTA VIEW ---- */
+        /* ---- LISTA VIEW - mantida igual, já é responsiva ---- */
         <div className="space-y-4">
           {activeDays.map(dia => {
             const aulas = byDay[dia] || [];
@@ -244,7 +295,7 @@ export default function HorariosPage() {
         </div>
       )}
 
-      {/* Add Dialog */}
+      {/* Add Dialog - mantido igual */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>

@@ -178,7 +178,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
         {/* Bottom nav (mobile) */}
         <nav className="lg:hidden flex items-center bg-white border-t border-slate-200 flex-shrink-0 safe-bottom">
-          {navItems.slice(0, 5).map(({ path, label, icon: Icon }) => {
+          {navItems.map(({ path, label, icon: Icon }) => {
             const isActive = path === '/' ? location === '/' : location.startsWith(path);
             return (
               <Link
